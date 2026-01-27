@@ -45,6 +45,9 @@ const connectDB = async () => {
 connectDB();
 
 // Only listen if run directly (Local Development)
+console.log('Argv[1]:', process.argv[1]);
+console.log('File:', fileURLToPath(import.meta.url));
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);

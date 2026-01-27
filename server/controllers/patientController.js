@@ -71,3 +71,35 @@ export const getPatientRecords = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
+// Update a patient record
+export const updatePatientRecord = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { text } = req.body;
+
+        const record = await PatientRecord.findById(id);
+        if (!record) {
+            return res.status(404).json({ message: 'Record not found' });
+        }
+
+        // Update fields if provided
+        if (text !== undefined) record.text = text;
+
+        // Handle file update if a new file is uploaded
+        if (req.file) {
+            // In a real app, delete the old file here
+            record.fileUrl = `/uploads/${req.file.filename}`;
+            record.originalName = req.file.originalname;
+            // Ensure type is updated if it was just a prescription before
+            record.type = 'file';
+        }
+
+        await record.save();
+        res.json({ message: 'Record updated successfully', record });
+
+    } catch (error) {
+        console.error("Update Error:", error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};

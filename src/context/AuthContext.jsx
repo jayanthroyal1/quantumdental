@@ -11,7 +11,10 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     // Configure axios base URL
-    axios.defaults.baseURL = 'http://localhost:5000/api';
+    // Configure axios base URL
+    // In production (Vercel), valid requests will just be /api/...
+    // Locally, Vite proxy will handle /api -> localhost:5000
+    axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/api';
 
     useEffect(() => {
         const checkLoggedIn = async () => {

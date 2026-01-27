@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { searchUsers, addPatientRecord, getPatientRecords } from '../controllers/patientController.js';
+import { searchUsers, addPatientRecord, getPatientRecords, updatePatientRecord } from '../controllers/patientController.js';
 import jwt from 'jsonwebtoken';
 
 const verifyToken = (req, res, next) => {
@@ -43,6 +43,7 @@ const router = express.Router();
 
 router.get('/search', verifyToken, searchUsers);
 router.post('/record', verifyToken, upload.single('file'), addPatientRecord);
+router.put('/record/:id', verifyToken, upload.single('file'), updatePatientRecord);
 router.get('/records/:userId', verifyToken, getPatientRecords);
 
 export default router;
