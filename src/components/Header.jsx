@@ -1,13 +1,43 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { Menu, X, Zap } from 'lucide-react';
 import logo from '../assets/logoOne.png';
+import axios from 'axios'; // Added axios import
 
 export default function Header() {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false); // Renamed isOpen to isMenuOpen
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState('home');
     const { scrollYProgress } = useScroll();
+    const { user, logout } = useAuth(); // Auth Hook
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [pendingCount, setPendingCount] = useState(0); // Added pendingCount state
+
+    // Added useEffect for fetching pendingCount
+    useEffect(() => {
+        if (user?.role === 'admin') {
+            const fetchCount = async () => {
+                try {
+                    // In a real app, create a specific endpoint for counts to optimize
+                    // For now, we'll fetch all and filter client side or use the existing list endpoint
+                    // Assuming we want to show ALL requests count or just pending. Let's show Pending.
+                    const res = await axios.get('/appointments');
+                    if (Array.isArray(res.data)) {
+                        const pending = res.data.filter(a => a.status === 'pending').length;
+                        setPendingCount(pending);
+                    }
+                } catch (e) { console.error("Failed to fetch count", e); }
+            };
+            fetchCount();
+            // Poll every 30 seconds
+            const interval = setInterval(fetchCount, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
+
     const scaleX = useSpring(scrollYProgress, {
         stiffness: 100,
         damping: 30,
@@ -31,37 +61,96 @@ export default function Header() {
             { threshold: 0.3 }
         );
 
-        ['home', 'about', 'services', 'gallery', 'testimonials', 'contact'].forEach((id) => {
-            const element = document.getElementById(id);
-            if (element) observer.observe(element);
-        });
+        if (location.pathname === '/') {
+            ['home', 'about', 'services', 'gallery', 'testimonials', 'contact', 'requests', 'patient', 'files'].forEach((id) => {
+                const element = document.getElementById(id);
+                if (element) observer.observe(element);
+            });
+        }
 
         return () => {
             window.removeEventListener('scroll', handleScroll);
             observer.disconnect();
         };
-    }, []);
+    }, [location.pathname]);
 
     const navLinks = [
-        { name: 'Home', href: '#home' },
-        { name: 'About', href: '#about' },
-        { name: 'Services', href: '#services' },
-        { name: 'Gallery', href: '#gallery' },
-        { name: 'Testimonials', href: '#testimonials' },
-        { name: 'Contact', href: '#contact' },
+        { name: 'Home', href: '/#home' },
+        { name: 'About', href: '/#about' },
     ];
+
+    // Only show Services/Gallery for non-admins
+    if (!user || user.role !== 'admin') {
+        navLinks.push(
+            { name: 'Services', href: '/#services' },
+            { name: 'Gallery', href: '/#gallery' }
+        );
+    }
+
+    navLinks.push({ name: 'Testimonials', href: '/#testimonials' });
+
+    // Add role-specific links
+    if (!user) {
+        navLinks.push({ name: 'Contact', href: '/#contact' });
+    } else if (user.role === 'admin') {
+        navLinks.push(
+            { name: 'Requests', href: '/#requests', badge: pendingCount },
+            { name: 'Patient', href: '/#patient' } // Renamed from Uploads
+        );
+    } else {
+        // Regular User
+        navLinks.push({ name: 'My Files', href: '/#files' });
+    }
+
+    const isLinkActive = (href) => {
+        if (location.pathname === '/') {
+            if (href.includes('#')) {
+                const sectionId = href.split('#')[1];
+                return activeSection === sectionId;
+            }
+        }
+        return location.pathname === href;
+    };
+
+    const handleLogoClick = (e) => {
+        e.preventDefault();
+        if (location.pathname !== '/') {
+            navigate('/');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setIsMenuOpen(false);
+    };
 
     const handleNavClick = (e, href) => {
         e.preventDefault();
-        if (window.lenis) {
-            window.lenis.scrollTo(href, { offset: -80 }); // sticky header offset
-        } else {
-            const element = document.querySelector(href);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
+
+        if (href.startsWith('/#')) { // Handle internal anchor links
+            if (location.pathname !== '/') {
+                navigate('/');
+                setTimeout(() => {
+                    const sectionId = href.split('#')[1];
+                    const element = document.getElementById(sectionId);
+                    if (element) {
+                        if (window.lenis) window.lenis.scrollTo(element, { offset: -80 });
+                        else element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 100);
+                return;
             }
+
+            const sectionId = href.split('#')[1];
+            if (window.lenis) {
+                window.lenis.scrollTo(`#${sectionId}`, { offset: -80 });
+            } else {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        } else { // Handle external routes like /requests
+            navigate(href);
         }
-        setIsOpen(false);
+        setIsMenuOpen(false); // Changed setIsOpen to setIsMenuOpen
     };
 
     return (
@@ -72,9 +161,11 @@ export default function Header() {
             <div className="container mx-auto px-6 flex justify-between items-center">
 
                 {/* Logo */}
-                <a
-                    href="#home"
-                    onClick={(e) => handleNavClick(e, '#home')}
+                <Link
+                    to="/"
+                    onClick={(e) => {
+                        if (location.pathname === '/') handleNavClick(e, '/#home');
+                    }}
                     className="flex items-center gap-2 group relative"
                 >
                     <div className="relative">
@@ -94,7 +185,7 @@ export default function Header() {
                             DIGITAL DENTISTRY
                         </span>
                     </div>
-                </a>
+                </Link>
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-8">
@@ -103,38 +194,65 @@ export default function Header() {
                             key={link.name}
                             href={link.href}
                             onClick={(e) => handleNavClick(e, link.href)}
-                            className={`transition-colors text-sm font-medium tracking-wide uppercase hover:underline decoration-2 decoration-primary underline-offset-4 ${activeSection === link.href.substring(1) ? 'text-primary underline' : 'text-gray-300 hover:text-primary'
-                                }`}
+                            className={`flex items-center text-sm font-medium tracking-wide uppercase hover:underline decoration-2 decoration-primary underline-offset-4 relative
+                                ${isLinkActive(link.href) ? 'text-primary underline' : 'text-gray-300 hover:text-primary'}
+                            `}
                         >
                             {link.name}
+                            {link.badge > 0 && (
+                                <span className="ml-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse">
+                                    {link.badge}
+                                </span>
+                            )}
                         </a>
                     ))}
-                    <a
-                        href="#contact"
-                        onClick={(e) => handleNavClick(e, '#contact')}
-                        className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-full font-medium transition-all shadow-[0_0_15px_rgba(14,165,233,0.5)] hover:shadow-[0_0_25px_rgba(14,165,233,0.7)]"
-                    >
-                        Book Now
-                    </a>
+
+                    {user ? (
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm font-medium text-primary">Hi, {user.name.split(' ')[0]} {user.role === 'admin' ? '(Admin)' : ''}</span>
+                            <button
+                                onClick={logout}
+                                className="px-5 py-2 border border-primary text-primary rounded-full font-medium hover:bg-primary hover:text-white transition-all"
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-4">
+                            <Link
+                                to="/login"
+                                className="px-5 py-2 text-sm font-medium text-gray-300 hover:text-white transition-all hover:bg-white/5 rounded-full border border-transparent hover:border-primary/30"
+                            >
+                                Login
+                            </Link>
+                            <Link
+                                to="/signup"
+                                className="px-6 py-2 rounded-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white font-medium shadow-lg hover:shadow-cyan-500/50 transform hover:-translate-y-0.5 transition-all duration-300"
+                            >
+                                Sign Up
+                            </Link>
+                        </div>
+                    )}
                 </nav>
 
                 {/* Mobile Menu Button */}
                 <button
-                    className="md:hidden text-white"
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    {isOpen ? <X /> : <Menu />}
+                    className="md:hidden text-white hover:text-primary transition-colors z-50 relative p-2"
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    aria-label="Toggle menu"
+                >{isMenuOpen ? <X /> : <Menu />}
                 </button>
             </div>
 
-            {/* Mobile Nav */}
+            {/* Mobile Menu Overlay */}
             <AnimatePresence>
-                {isOpen && (
+                {isMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="absolute top-full left-0 w-full bg-surface border-t border-white/10 shadow-2xl md:hidden"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: '100vh' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="md:hidden fixed inset-0 bg-background/95 backdrop-blur-xl z-40 overflow-hidden flex flex-col pt-24"
                     >
                         <nav className="flex flex-col p-6 gap-4">
                             {navLinks.map((link) => (
@@ -142,18 +260,40 @@ export default function Header() {
                                     key={link.name}
                                     href={link.href}
                                     onClick={(e) => handleNavClick(e, link.href)}
-                                    className={`text-lg transition-colors ${activeSection === link.href.substring(1) ? 'text-primary font-bold' : 'text-gray-300 hover:text-primary'}`}
+                                    className={`text-lg transition-colors ${isLinkActive(link.href) ? 'text-primary font-bold' : 'text-gray-300 hover:text-primary'}`}
                                 >
                                     {link.name}
                                 </a>
                             ))}
-                            <a
-                                href="#contact"
-                                onClick={(e) => handleNavClick(e, '#contact')}
-                                className="w-full text-center px-6 py-3 bg-primary text-white rounded-lg font-medium shadow-lg hover:bg-primary/90 transition-colors"
-                            >
-                                Book Now
-                            </a>
+
+                            {user ? (
+                                <>
+                                    <div className="text-primary font-medium">Hi, {user.name}</div>
+                                    <button
+                                        onClick={() => { logout(); setIsMenuOpen(false); }}
+                                        className="w-full text-center px-6 py-3 border border-primary text-primary rounded-lg font-medium hover:bg-primary hover:text-white transition-colors"
+                                    >
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link
+                                        to="/login"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="w-full text-center px-6 py-3 border border-white/10 rounded-lg hover:border-primary/50 hover:bg-white/5 text-gray-300 hover:text-white transition-all duration-300"
+                                    >
+                                        Login
+                                    </Link>
+                                    <Link
+                                        to="/signup"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="w-full text-center px-6 py-3 bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white rounded-lg font-medium shadow-lg hover:shadow-cyan-500/30 transition-all duration-300"
+                                    >
+                                        Sign Up
+                                    </Link>
+                                </>
+                            )}
                         </nav>
                     </motion.div>
                 )}

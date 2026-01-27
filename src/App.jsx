@@ -1,15 +1,13 @@
 import React, { useEffect } from 'react';
 import Lenis from 'lenis';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import About from './components/About';
-import Services from './components/Services';
-import Gallery from './components/Gallery';
-import Testimonials from './components/Testimonials';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
-import FloatingSocials from './components/FloatingSocials';
-import ScrollToTop from './components/ScrollToTop';
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import AdminSignup from './pages/AdminSignup';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   useEffect(() => {
@@ -37,20 +35,14 @@ function App() {
   }, []);
 
   return (
-    <div className="bg-background min-h-screen text-white overflow-x-hidden selection:bg-primary/30">
-      <Header />
-      <main>
-        <Hero />
-        <About />
-        <Services />
-        <Gallery />
-        <Testimonials />
-        <Contact />
-      </main>
-      <Footer />
-      <FloatingSocials />
-      <ScrollToTop />
-    </div>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
+      <Route path="/admin/signup" element={<AdminSignup />} />
+    </Routes>
   );
 }
 
