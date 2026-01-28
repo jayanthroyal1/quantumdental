@@ -31,27 +31,15 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/patients', patientRoutes);
 
 // Database Connection Pattern for Serverless
-const connectDB = async () => {
+export const connectDB = async () => {
     if (mongoose.connection.readyState >= 1) return;
     try {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('MongoDB Connected');
     } catch (err) {
         console.error('MongoDB Connection Error:', err);
+        throw err;
     }
 };
-
-// Connect to DB immediately (will be reused)
-connectDB();
-
-// Only listen if run directly (Local Development)
-console.log('Argv[1]:', process.argv[1]);
-console.log('File:', fileURLToPath(import.meta.url));
-
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-    });
-}
 
 export default app;

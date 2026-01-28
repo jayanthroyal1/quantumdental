@@ -1,6 +1,5 @@
-import app from '../server/server.js';
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import app, { connectDB } from '../server/server.js';
+import dotenv from 'dotenv'; // Load dotenv here just in case, though server.js does it too
 
 dotenv.config();
 
@@ -20,19 +19,14 @@ export default async (req, res) => {
         });
     }
 
-    // 2. Ensure Database Connection
-    // Using mongoose.connection.readyState to check: 0 = disconnected, 1 = connected, 2 = connecting
-    if (mongoose.connection.readyState !== 1) {
-        try {
-            await mongoose.connect(process.env.MONGO_URI);
-            console.log('MongoDB Connected in Serverless Handler');
-        } catch (err) {
-            console.error('MongoDB Connection Error:', err);
-            return res.status(500).json({
-                error: 'Database Connection Failed',
-                message: err.message
-            });
-        }
+    // 2. Ensure Database Connection using shared logic
+    try {
+        await connectDB();
+    } catch (err) {
+        return res.status(500).json({
+            error: 'Database Connection Failed',
+            message: err.message
+        });
     }
 
     // 3. Delegate request to express app
