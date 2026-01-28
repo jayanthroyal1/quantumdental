@@ -3,6 +3,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import heroBg from '../assets/herobackground.gif';
+import SEO from '../components/SEO';
 
 const Signup = () => {
     const [name, setName] = useState('');
@@ -33,6 +34,10 @@ const Signup = () => {
 
     return (
         <div className="min-h-screen bg-background text-white flex flex-col relative overflow-hidden">
+            <SEO
+                title="Sign Up"
+                description="Create a Quantum Dentistry account to manage your dental health journey."
+            />
             {/* Background */}
             <div className="absolute inset-0 z-0">
                 <img

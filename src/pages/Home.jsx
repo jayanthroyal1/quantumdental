@@ -13,9 +13,49 @@ import AdminPatientSection from '../components/AdminPatientSection'; // Updated 
 import Footer from '../components/Footer';
 import FloatingSocials from '../components/FloatingSocials';
 import ScrollToTop from '../components/ScrollToTop';
+import SEO from '../components/SEO';
 
 const Home = () => {
     const { user } = useAuth();
+
+    const businessSchema = {
+        "@context": "https://schema.org",
+        "@type": "Dentist",
+        "name": "Quantum Digital Dentistry",
+        "image": "https://quantumdental.vercel.app/logo.png",
+        "@id": "https://quantumdental.vercel.app",
+        "url": "https://quantumdental.vercel.app",
+        "telephone": "+9107207011988",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "3rd floor, Flat No: 33/A, Sri sai Govardhan Kunj, 7-1-397/101, 301/A, opposite Domino's Pizza, near Community hall",
+            "addressLocality": "S.R Nagar, Ameerpet",
+            "addressRegion": "Telangana",
+            "postalCode": "500038",
+            "addressCountry": "IN"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 17.4419959,
+            "longitude": 78.4435775
+        },
+        "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday"
+            ],
+            "opens": "09:00",
+            "closes": "21:00"
+        },
+        "sameAs": [
+            "https://www.instagram.com/quantumdigitaldentistry"
+        ]
+    };
 
     // Render logic for the main content section based on role
     const renderContent = () => {
@@ -33,6 +73,12 @@ const Home = () => {
 
     return (
         <div className="bg-background min-h-screen text-white overflow-x-hidden selection:bg-primary/30">
+            <SEO
+                title="Best Dental Clinic in S.R Nagar & Ameerpet, Hyderabad"
+                description="Quantum Digital Dentistry - Advanced dental care in S.R Nagar & Ameerpet, Hyderabad. Specialists in implants, smile design & digital dentistry. Book appointment now."
+                keywords="dentist hyderabad, dental clinic S.R Nagar, dental clinic Ameerpet, dentist near me, top dentist S.R Nagar, best dental clinic Hyderabad, Quantum Dentistry, Quantam, digital dentistry, dental implants"
+                schema={businessSchema}
+            />
             <Header />
             <main>
                 <Hero />

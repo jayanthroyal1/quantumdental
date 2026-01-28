@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Mail, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -29,6 +30,10 @@ const ForgotPassword = () => {
 
     return (
         <section className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-[#0a0a0a]">
+            <SEO
+                title="Forgot Password"
+                description="Recover your Quantum Dentistry account password."
+            />
             {/* Background Effects */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
                 <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] mix-blend-screen animate-blob" />

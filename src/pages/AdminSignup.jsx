@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import heroBg from '../assets/herobackground.gif';
+import SEO from '../components/SEO';
 
 const AdminSignup = () => {
     const [name, setName] = useState('');
@@ -24,6 +25,11 @@ const AdminSignup = () => {
 
     return (
         <div className="min-h-screen bg-background text-white flex flex-col relative overflow-hidden">
+            <SEO
+                title="Admin Registration"
+                description="Admin registration portal for Quantum Dentistry staff."
+                robots="noindex, nofollow"
+            />
             {/* Background */}
             <div className="absolute inset-0 z-0">
                 <img

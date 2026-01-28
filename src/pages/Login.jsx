@@ -3,6 +3,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import heroBg from '../assets/herobackground.gif';
+import SEO from '../components/SEO';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -32,6 +33,10 @@ const Login = () => {
 
     return (
         <div className="min-h-screen bg-background text-white flex flex-col relative overflow-hidden">
+            <SEO
+                title="Login"
+                description="Login to your Quantum Dentistry account to manage appointments and view records."
+            />
             {/* Background */}
             <div className="absolute inset-0 z-0">
                 <img
