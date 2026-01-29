@@ -229,13 +229,13 @@ export default function Header() {
                                 to="/admin/signup"
                                 className="px-5 py-2 text-sm font-medium text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/10 rounded-full transition-all hover:border-cyan-400"
                             >
-                                Doctor
+                                Doctor Signup
                             </Link>
                             <Link
                                 to="/signup"
                                 className="px-6 py-2 rounded-full bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white font-medium shadow-lg hover:shadow-cyan-500/50 transform hover:-translate-y-0.5 transition-all duration-300"
                             >
-                                Patient
+                                Patient Signup
                             </Link>
                         </div>
                     )}
@@ -296,14 +296,14 @@ export default function Header() {
                                         onClick={() => setIsMenuOpen(false)}
                                         className="w-full text-center px-6 py-3 border border-cyan-500/30 text-cyan-400 rounded-lg hover:bg-cyan-500/10 transition-all duration-300"
                                     >
-                                        Doctor
+                                        Doctor Signup
                                     </Link>
                                     <Link
                                         to="/signup"
                                         onClick={() => setIsMenuOpen(false)}
                                         className="w-full text-center px-6 py-3 bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-white rounded-lg font-medium shadow-lg hover:shadow-cyan-500/30 transition-all duration-300"
                                     >
-                                        Patient
+                                        Patient Signup
                                     </Link>
                                 </>
                             )}
