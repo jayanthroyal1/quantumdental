@@ -30,5 +30,13 @@ export default async (req, res) => {
     }
 
     // 3. Delegate request to express app
-    app(req, res);
+    try {
+        app(req, res);
+    } catch (error) {
+        console.error('[API Handler Error]:', error);
+        res.status(500).json({
+            error: 'Internal Server Error',
+            message: error.message
+        });
+    }
 };

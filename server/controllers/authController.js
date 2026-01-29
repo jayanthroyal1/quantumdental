@@ -58,21 +58,41 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
+        console.log(`[Login Attempt] Email: ${email}`); // Log attempt
+
+        // 1. Validate Input
+        if (!email || !password) {
+            console.log('[Login Error] Missing credentials');
+            return res.status(400).json({ message: 'Please provide both email and password' });
+        }
+
+        // 2. Find User
         const user = await User.findOne({ email });
         if (!user) {
+            console.log('[Login Error] User not found');
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // specific check for google users who might not have a password
+        // 3. Check for Google-only users
         if (!user.password && user.googleId) {
+            console.log('[Login Error] Google account user tried password login');
             return res.status(400).json({ message: 'Please login with Google' });
+        }
+
+        // 4. Verify Password
+        if (!user.password) {
+            console.log('[Login Error] User has no password set (and no Google ID known?)');
+            return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            console.log('[Login Error] Password mismatch');
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+        // 5. Success
+        console.log(`[Login Success] User: ${user._id}`);
         res.json({
             _id: user._id,
             name: user.name,
@@ -81,7 +101,12 @@ export const login = async (req, res) => {
             token: generateToken(user._id, user.role),
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        console.error('[Login Critical Error]:', error);
+        res.status(500).json({
+            message: 'Server error during login',
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 
