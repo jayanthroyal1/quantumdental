@@ -5,7 +5,7 @@ import { OAuth2Client } from 'google-auth-library';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+// const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID); // Moved inside handler
 
 const generateToken = (id, role) => {
     return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -114,6 +114,9 @@ export const googleAuth = async (req, res) => {
     const { credential } = req.body;
 
     try {
+        // Lazy load client to prevent top-level crash if env var is missing
+        const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
         const ticket = await client.verifyIdToken({
             idToken: credential,
             audience: process.env.GOOGLE_CLIENT_ID,

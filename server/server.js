@@ -41,7 +41,13 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// DISABLE FOR VERCEL: Accessing __dirname or assuming a persistent 'uploads' folder exists can crash serverless functions
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const uploadsPath = path.join(__dirname, 'uploads');
+// Only try to serve if it actually exists (local dev safety), but generally avoid in serverless
+if (process.env.NODE_ENV !== 'production') {
+    app.use('/uploads', express.static(uploadsPath));
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -55,6 +61,15 @@ app.get('/api/health', (req, res) => {
         status: 'OK',
         uptime: process.uptime(),
         database: dbStatus,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Sanity Check Endpoint (Vercel Debugging)
+app.get('/api/sanity', (req, res) => {
+    res.status(200).json({
+        message: 'Sanity Check Passed',
+        environment: process.env.NODE_ENV,
         timestamp: new Date().toISOString()
     });
 });
